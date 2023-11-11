@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 
 import { NgIf, NgFor, NgClass } from '@angular/common';
 import { Product } from '../product';
 import { ProductDetailComponent } from '../product-detail/product-detail.component';
+import { ProductService } from '../product.service';
+import { Subscription, tap } from 'rxjs';
 
 @Component({
     selector: 'pm-product-list',
@@ -10,10 +12,12 @@ import { ProductDetailComponent } from '../product-detail/product-detail.compone
     standalone: true,
   imports: [NgIf, NgFor, NgClass, ProductDetailComponent]
 })
-export class ProductListComponent {
-  // Just enough here for the template to compile
+export class ProductListComponent implements OnInit, OnDestroy{
   pageTitle = 'Products';
   errorMessage = '';
+  sub!:Subscription;
+
+  private productService = inject(ProductService);
 
   // Products
   products: Product[] = [];
@@ -23,5 +27,18 @@ export class ProductListComponent {
 
   onSelected(productId: number): void {
     this.selectedProductId = productId;
+  }
+
+  ngOnInit(): void {
+      this.sub = this.productService.getProducts().pipe(
+        // tap(() => console.log('In ProductListComponent pipeline')),
+        tap(products => {
+          this.products = products
+          console.log(products);})
+      ).subscribe();
+  }
+
+  ngOnDestroy(): void {
+    this.sub.unsubscribe();
   }
 }

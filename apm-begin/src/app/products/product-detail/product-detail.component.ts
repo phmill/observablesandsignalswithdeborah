@@ -2,7 +2,7 @@ import { Component, Input, OnChanges, OnDestroy, SimpleChanges, inject } from '@
 
 import { NgIf, NgFor, CurrencyPipe } from '@angular/common';
 import { Product } from '../product';
-import { Subscription, tap } from 'rxjs';
+import { EMPTY, Subscription, catchError, tap } from 'rxjs';
 import { ProductService } from '../product.service';
 
 @Component({
@@ -37,6 +37,10 @@ export class ProductDetailComponent implements OnChanges, OnDestroy {
         tap(product => {
           this.product = product;
           console.log(product);
+        }),
+        catchError(err => {
+          this.errorMessage = err;
+          return EMPTY;
         })
       ).subscribe();
     }
